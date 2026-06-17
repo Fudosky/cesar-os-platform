@@ -1,0 +1,6 @@
+# Forzar LF en archivos que corren en Linux (evita "bad interpreter" por CRLF de Windows)
+*.sh        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+Caddyfile   text eol=lf
+.env.example text eol=lf
