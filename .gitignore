@@ -1,0 +1,10 @@
+# Secretos — NUNCA versionar
+.env
+*.env
+!.env.example
+# Datos / volúmenes
+data/
+*.log
+# SO
+.DS_Store
+Thumbs.db

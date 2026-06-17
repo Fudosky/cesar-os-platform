@@ -1,0 +1,14 @@
+# Cesar OS — reverse proxy con HTTPS automático (Let's Encrypt)
+# Subdominios: el principal (placeholder en Fase 0), llm.* (LiteLLM), observ.* (Langfuse)
+
+{$DOMAIN} {
+	respond "Cesar OS — Fase 0 OK ✅ (cimiento activo)" 200
+}
+
+llm.{$DOMAIN} {
+	reverse_proxy litellm:4000
+}
+
+observ.{$DOMAIN} {
+	reverse_proxy langfuse:3000
+}
