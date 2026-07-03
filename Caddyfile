@@ -1,8 +1,8 @@
-# Cesar OS — reverse proxy con HTTPS automático (Let's Encrypt)
-# Subdominios: el principal (placeholder en Fase 0), llm.* (LiteLLM), observ.* (Langfuse)
+# Cesar OS — reverse proxy con HTTPS automático
+# Fase 1: el dominio principal sirve Open WebUI (tu chat). llm.* y observ.* siguen igual.
 
 {$DOMAIN} {
-	respond "Cesar OS — Fase 0 OK ✅ (cimiento activo)" 200
+	reverse_proxy open-webui:8080
 }
 
 llm.{$DOMAIN} {

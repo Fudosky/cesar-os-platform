@@ -23,7 +23,7 @@ model_list:
   # --- OpenRouter (modelos gratis/variados) ---
   - model_name: or-gptoss
     litellm_params:
-      model: openrouter/openai/gpt-oss-120b
+      model: openrouter/openai/gpt-oss-120b:free
       api_key: os.environ/OPENROUTER_API_KEY
 
 litellm_settings:

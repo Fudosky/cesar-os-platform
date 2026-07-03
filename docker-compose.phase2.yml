@@ -1,0 +1,60 @@
+# Cesar OS Platform — Fase 2: bot de Telegram 24/7 + career-radar + mem0
+# Levantar (encima de Fase 0/1):
+#   docker compose -f docker-compose.yml -f docker-compose.phase1.yml -f docker-compose.phase2.yml up -d telegram-bot
+name: cesar-os
+
+services:
+  telegram-bot:
+    build: /root/bot
+    image: cesar-os-bot:latest
+    restart: unless-stopped
+    environment:
+      TZ: America/Mexico_City
+      # /modo claude habla con el gateway LiteLLM del propio VPS
+      LITELLM_BASE_URL: http://litellm:4000/v1
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+      # Modelo Claude que usa /modo claude (sonnet|opus|haiku). Se activa al poner ANTHROPIC_API_KEY en .env
+      CLAUDE_GATEWAY_MODEL: sonnet
+      # El Consejo de Agentes: dónde está el vault (cerebro) dentro del contenedor
+      OBSIDIAN_VAULT: /root/Dropbox/OBSIDIAN
+      # Modelo de los agentes del Consejo. groq-llama (gratis, funciona). or-gptoss requiere
+      # OPENROUTER_API_KEY válida en el gateway; sonnet/opus/haiku al activar Anthropic.
+      CONSEJO_AGENT_MODEL: groq-llama
+      # Cerebro v2.1 — /nutrir: rclone remote + gateway LiteLLM para resúmenes
+      RCLONE_REMOTE: dropbox
+      LITELLM_URL: http://litellm:4000
+    volumes:
+      # Vault Obsidian (lo que rclone sincroniza con Dropbox) montado donde el código lo espera
+      - /root/vault:/root/Dropbox/OBSIDIAN
+      # Secretos (solo lectura) — el contenedor los lee, nunca se hornean en la imagen
+      - /root/.secrets/.env:/root/.secrets/.env:ro
+      # Código bind-mounted desde el host (actualizar = docker restart, sin rebuild)
+      - /root/bot/telegram-claude:/root/telegram-claude
+      - /root/bot/career-radar:/root/career-radar
+      - /root/bot/mem0-local:/root/mem0-local
+      # Memorias mem0 (chroma) persistentes en el host
+      - /root/data/mem0:/root/mem0-local/chroma
+      # Scripts + token de Outlook (Graph API) para /email headless 24/7
+      - /root/.hermes:/root/.hermes
+      # Cerebro v2.1 — config rclone (RO) + data dir (manifest/stage) persistente
+      - /root/.config/rclone:/root/.config/rclone:ro
+      - /root/data/conocimiento:/root/data/conocimiento
+
+
+
+
+  hermes:
+    image: nousresearch/hermes-agent@sha256:54ee807864eda15421478c885ea484f585cb3eb6f1053cfb02e1c0005fd62b15
+    restart: unless-stopped
+    mem_limit: 4g
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    extra_hosts:
+      - "api.telegram.org:149.154.167.220"
+    environment:
+      TZ: America/Mexico_City
+      HERMES_TELEGRAM_DISABLE_FALLBACK_IPS: "1"
+    volumes:
+      - /root/.hermes:/opt/data
+      - /root/vault:/root/Dropbox/OBSIDIAN
+    command: gateway run

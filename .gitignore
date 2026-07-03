@@ -1,10 +1,5 @@
-# Secretos — NUNCA versionar
 .env
-*.env
-!.env.example
-# Datos / volúmenes
-data/
+.env.*
+*.bak-*
+*.save
 *.log
-# SO
-.DS_Store
-Thumbs.db
