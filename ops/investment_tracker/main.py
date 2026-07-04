@@ -40,23 +40,32 @@ def process_source(src, dry_run=False):
                     cand = extract.candidate_lines(extract.pdf_text(raw, pw))
                 except Exception as e:
                     cand = ["(no se pudo leer el PDF: %s)" % e]
-        res, model = analyze.analyze(src, m.get("subject", ""), cand, m.get("bodyPreview", ""))
-        v = res.get("veredicto", {}) or {}
-        accion = any([v.get("caida"), v.get("tendencia_baja"), v.get("accion_requerida")])
+        subject = m.get("subject", "") or ""
+        # --- análisis: LOCAL (sin LLM) o Opus, según config ---
+        if c.LOCAL_ONLY:
+            res = analyze.analyze_local(src, subject, cand)
+        else:
+            res, _model = analyze.analyze(src, subject, cand, m.get("bodyPreview", ""))
+        series = _series(src, subject)
+        valor = res.get("valor")
+        prev = record.last_value(series)   # valor anterior de ESTA cuenta
+        caida = (prev is not None and valor is not None and valor < prev * (1 - c.DROP_ALARM_PCT / 100.0))
         if dry_run:
-            print("\n== %s | %s\n   tipo=%s valor=%s %s\n   %s\n   veredicto=%s" %
-                  (src["label"], (m.get("subject", "") or "")[:50], res.get("tipo"),
-                   res.get("valor"), res.get("moneda"), res.get("resumen"), v))
+            print("\n== %s [%s] | %s\n   tipo=%s valor=%s %s | prev=%s caida=%s\n   %s" %
+                  (src["label"], series.split("·")[-1], subject[:45], res.get("tipo"),
+                   valor, res.get("moneda"), prev, caida, res.get("resumen")))
             nuevos += 1
             continue
         if res.get("tipo") == "ruido":
             record.bitacora_row(src, key, "ruido", res.get("resumen", ""), False)
         else:
+            tend = record.tracker_row(src, valor, res.get("moneda"), series=series)
+            tend_baja = bool(tend and "↘️" in tend)
+            accion = caida or tend_baja
             record.bitacora_row(src, key, "sustantivo", res.get("resumen", ""), accion)
-            tend = record.tracker_row(src, res.get("valor"), res.get("moneda"),
-                                      series=_series(src, m.get("subject", "")))
-            if accion or (tend and "↘️" in tend):
-                alarm.raise_alarm(src, res.get("resumen", ""), v.get("porque", "revisar"))
+            if accion:
+                motivo = ("caída >%.0f%% vs anterior" % c.DROP_ALARM_PCT) if caida else "tendencia a la baja"
+                alarm.raise_alarm(src, res.get("resumen", ""), motivo)
         nuevos += 1
     _log("%s: %d nuevos%s" % (src["key"], nuevos, " (dry-run)" if dry_run else ""))
     return nuevos

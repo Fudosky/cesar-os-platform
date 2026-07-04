@@ -17,6 +17,12 @@ MODEL = base.BRIEFING_MODEL
 TELEGRAM_TOKEN = base.TELEGRAM_TOKEN
 TELEGRAM_CHAT = base.TELEGRAM_CHAT
 
+# 🔒 Modo privacidad: True = TODO LOCAL (Anthropic no ve NADA financiero; análisis por reglas).
+# Cambiar a False solo cuando el ZDR de Anthropic esté confirmado (para el análisis matizado de Opus).
+LOCAL_ONLY = True
+DROP_ALARM_PCT = 3.0   # caída >3% vs valor anterior dispara alarma (modo local)
+NOISE_PATTERNS = ("protocolo cisa", "aviso del mercado", "aviso de abono", "cisa")
+
 INV_DIR = "01 - Inversiones"
 TRACKER_NOTE = INV_DIR + "/📈 Tracker de Inversiones — Valores en el Tiempo.md"
 PENDIENTES_NOTE = "00 - Sistema/📌 Pendientes y TODOs.md"

@@ -54,6 +54,12 @@ def _prev_values(series):
     return vals
 
 
+def last_value(series):
+    """Último valor registrado de una serie (o None) — para detectar caídas localmente."""
+    vals = _prev_values(series)
+    return vals[-1] if vals else None
+
+
 def _trend(values):
     if len(values) < 2:
         return "➡️ (base)"
