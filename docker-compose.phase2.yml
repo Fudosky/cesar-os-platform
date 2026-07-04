@@ -58,3 +58,14 @@ services:
       - /root/.hermes:/opt/data
       - /root/vault:/root/Dropbox/OBSIDIAN
     command: gateway run
+
+  cerebro-mcp:
+    image: cesar-os-bot:latest
+    restart: unless-stopped
+    environment:
+      TZ: America/Mexico_City
+      CONOCIMIENTO_COLLECTION: vault
+      CEREBRO_MCP_PORT: "8090"
+    volumes:
+      - /root/bot/telegram-claude:/root/telegram-claude
+    command: ["python3", "/root/telegram-claude/cerebro_mcp.py"]
