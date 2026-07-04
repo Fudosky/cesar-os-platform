@@ -68,7 +68,7 @@ RSS_FEEDS = [
 # Cuentas gmail_imap sin App Password configurada se SALTAN (no rompen el briefing).
 EMAIL_ACCOUNTS = [
     {"label": "📧 Hotmail", "email": "cabrerc1@hotmail.com", "provider": "microsoft"},
-    {"label": "📨 Gmail", "email": "cukly17@gmail.com", "provider": "gmail_imap", "pw_env": "GMAIL_CUKLY17_APP_PW"},
+    {"label": "📨 Gmail", "email": "cukly17@gmail.com", "provider": "gmail_imap", "pw_env": "GMAIL_CUKLY17_APP_PW", "recent_days": 1},
     {"label": "🔺 C2J", "email": "c2jtycheventures@gmail.com", "provider": "gmail_imap", "pw_env": "GMAIL_C2J_APP_PW"},
     {"label": "🎓 Edron", "email": "cabrera.lopez@edron.edu.mx", "provider": "gmail_imap", "pw_env": "GMAIL_EDRON_APP_PW"},
 ]

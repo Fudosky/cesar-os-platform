@@ -9,11 +9,14 @@ Archivo `mail.py` (no `email.py`) para no tapar el módulo stdlib `email`.
 """
 import os
 import json
+import datetime
 import subprocess
 import imaplib
 import email as emaillib
 from email.header import decode_header
 from maestro_briefing import config as c
+
+_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 
 def _decode(s):
@@ -50,14 +53,22 @@ def _gmail_block(acc, label, max_items):
     pw = os.environ.get(acc.get("pw_env", ""), "").strip()
     if not pw:
         return None  # cuenta aún no configurada -> skip silencioso
+    recent_days = acc.get("recent_days")
+    note = ""
     M = imaplib.IMAP4_SSL("imap.gmail.com", 993)
     try:
         M.login(acc["email"], pw)
         M.select("INBOX", readonly=True)   # readonly = jamás marca leído
-        typ, data = M.search(None, "UNSEEN")
+        if recent_days:
+            d = datetime.date.today() - datetime.timedelta(days=recent_days)
+            since = "%02d-%s-%d" % (d.day, _MONTHS[d.month - 1], d.year)
+            typ, data = M.search(None, "UNSEEN", "SINCE", since)
+            note = " · últimas ~%dh" % (recent_days * 24)
+        else:
+            typ, data = M.search(None, "UNSEEN")
         ids = data[0].split() if (data and data[0]) else []
         if not ids:
-            return "%s: sin no leídos." % label
+            return "%s: sin no leídos%s." % (label, note)
         lines = []
         for i in reversed(ids[-max_items:]):
             typ, md = M.fetch(i, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT)])")
@@ -66,7 +77,7 @@ def _gmail_block(acc, label, max_items):
             frm = _decode(msg.get("From", ""))[:40]
             subj = _decode(msg.get("Subject", "(sin asunto)"))[:80]
             lines.append("  - %s: %s" % (frm, subj))
-        return "%s (%d no leídos):\n%s" % (label, len(ids), "\n".join(lines))
+        return "%s (%d no leídos%s):\n%s" % (label, len(ids), note, "\n".join(lines))
     finally:
         try:
             M.logout()
