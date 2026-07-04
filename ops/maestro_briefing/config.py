@@ -61,3 +61,14 @@ RSS_FEEDS = [
     "https://www.utilitydive.com/feeds/news/",
     "https://thequantuminsider.com/feed/",
 ]
+
+# --- Cuentas de correo (multi-cuenta) ---
+# provider: "microsoft" (Graph via outlook_email.py) o "gmail_imap" (IMAP + App Password).
+# La App Password de cada Gmail se guarda en /opt/data/.env con el nombre de pw_env.
+# Cuentas gmail_imap sin App Password configurada se SALTAN (no rompen el briefing).
+EMAIL_ACCOUNTS = [
+    {"label": "📧 Hotmail", "email": "cabrerc1@hotmail.com", "provider": "microsoft"},
+    {"label": "📨 Gmail", "email": "cukly17@gmail.com", "provider": "gmail_imap", "pw_env": "GMAIL_CUKLY17_APP_PW"},
+    {"label": "🔺 C2J", "email": "c2jtycheventures@gmail.com", "provider": "gmail_imap", "pw_env": "GMAIL_C2J_APP_PW"},
+    {"label": "🎓 Edron", "email": "cabrera.lopez@edron.edu.mx", "provider": "gmail_imap", "pw_env": "GMAIL_EDRON_APP_PW"},
+]
